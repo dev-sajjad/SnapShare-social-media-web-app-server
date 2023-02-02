@@ -42,15 +42,34 @@ export const updatePost = async (req, res) => {
 
 // delete a post
 export const deletePost = async (req, res) => {
-    const { id: _id } = req.params;
+    const { id } = req.params;
 
     // check if _id exists
-    if (!mongoose.Types.ObjectId.isValid(_id)) return res.status(404).json({ message: "Post not found" });
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ message: "Post not found" });
 
     try {
-        await PostMessage.findByIdAndDelete(_id);
+        await PostMessage.findByIdAndDelete(id);
         res.status(200).json({ message: "Post deleted" });
     } catch (error) {
         res.status(400).json({ message: error.message})
     }
 }
+
+// like a post
+export const likePost = async (req, res) => {
+    const { id } = req.params;
+
+    // check if _id exists
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ message: "Post not found" });
+
+    try {
+        const post = await PostMessage.findById(id);
+        post.likeCount++;
+        await post.save()
+        res.status(201).json(post);
+    } catch (error) {
+        res.json({ message: error.message})
+    }
+}
+
+// unlike a post
