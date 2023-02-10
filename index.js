@@ -2,7 +2,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import mongoose from "mongoose";
+
 import postRoutes from "./routes/posts.js";
+import authRoutes from "./routes/userAuth.js";
 
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -16,6 +18,8 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 // default routes
 app.use('/posts', postRoutes);
+app.use('/jwt', authRoutes)
+
 
 
 // mongodb url
@@ -24,6 +28,6 @@ const CONNECTION_URL = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.D
 // connect mongoose
 mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => app.listen(port, () => console.log(`Server started on port: ${port}`)))
-    .catch((error) => console.error(error.message));
+  .catch((error) => console.error(error.message));
   
-mongoose.set("strictQuery", false);
+mongoose.set("strictQuery", true);

@@ -14,7 +14,9 @@ export const getPosts = async(req, res) => {
 // create a post
 export const createPost = async(req, res) => {
     const post = req.body;
-    const newPost = new PostMessage(post);
+    console.log(post);
+
+    const newPost = new PostMessage({...post, createdAt: new Date().toISOString()});
     try {
         await newPost.save();
         res.status(201).json(newPost);
@@ -58,15 +60,24 @@ export const deletePost = async (req, res) => {
 // like a post
 export const likePost = async (req, res) => {
     const { id } = req.params;
+    // check if user is not authenticated
+    if(!req.decoded.uid) return res.status(401).json({ message: "Unauthenticated user!" });
 
     // check if _id exists
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ message: "Post not found" });
 
     try {
         const post = await PostMessage.findById(id);
-        post.likeCount++;
-        await post.save()
-        res.status(201).json(post);
+        // control if post is already liked
+        const index = post.likes.findIndex((uid) => uid === req.decoded.uid);
+        if (index === -1) {
+            post.likes.push(req.decoded.uid);
+        } else {
+            post.likes= post.likes.filter((uid) => uid !== req.decoded.uid);
+        }
+
+        const updatedPost = await PostMessage.findByIdAndUpdate(id, post, { new: true });
+        res.status(201).json(updatedPost);
     } catch (error) {
         res.json({ message: error.message})
     }
