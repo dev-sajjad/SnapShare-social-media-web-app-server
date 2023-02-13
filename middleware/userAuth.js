@@ -15,7 +15,6 @@ import jwt from 'jsonwebtoken';
         req.decoded = decoded;
         next();
     })  
-
 }
 
 export default userAuth;

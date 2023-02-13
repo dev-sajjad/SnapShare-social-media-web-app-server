@@ -2,19 +2,44 @@ import mongoose from "mongoose";
 import PostMessage from "../models/postMessage.js";
 
 // get all posts
-export const getPosts = async(req, res) => {
-   try {
-       const postMessages = await PostMessage.find();
-       res.status(200).json(postMessages);
+export const getPosts = async (req, res) => {
+    const { page} = req.query;
+
+    try {
+        const LIMIT = 4;
+        const startIndex = (Number(page) - 1) * LIMIT; // get the starting index of every post
+        const total = await PostMessage.countDocuments({}); // get the total number of posts
+        
+        const posts = await PostMessage.find().sort({ _id: -1 }).skip(startIndex).limit(LIMIT); // get the posts
+        
+       res.status(200).json({data: posts, currentPage: Number(page), numberOfPages: Math.ceil(total / LIMIT)});
+
    } catch (error) {
         res.status(404).json({ message: error.message})
    }
 }
 
+export const getPostsBySearch = async (req, res) => {
+    try {
+        const {searchQuery, tags } = req.query;
+        const title = new RegExp(searchQuery, "i");
+       
+        const posts = await PostMessage.find({
+            $or: [
+                { tags: { $in: tags.split(',') } },
+                { title: title }
+            ]
+        });
+
+        res.status(200).json( posts)
+    } catch (error) {
+        res.status(404).json({ message: error.message})
+    }
+}
+
 // create a post
 export const createPost = async(req, res) => {
     const post = req.body;
-    console.log(post);
 
     const newPost = new PostMessage({...post, createdAt: new Date().toISOString()});
     try {
@@ -83,4 +108,3 @@ export const likePost = async (req, res) => {
     }
 }
 
-// unlike a post
