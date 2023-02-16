@@ -20,7 +20,9 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use('/posts', postRoutes);
 app.use('/jwt', authRoutes)
 
-
+app.use('/', (req, res) => {
+  res.json('Application running!')
+})
 
 // mongodb url
 const CONNECTION_URL = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.ozga6sm.mongodb.net/?retryWrites=true&w=majority`;
